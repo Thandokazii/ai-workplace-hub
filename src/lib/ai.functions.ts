@@ -3,12 +3,7 @@ import { z } from "zod";
 import { callAi, AiError } from "./ai.server";
 
 const EmailInput = z.object({
-  situation: z.string().min(1).max(4000),
-  purpose: z.string().max(500).optional().default(""),
-  recipient: z.string().max(200).optional().default(""),
-  details: z.string().max(4000).optional().default(""),
-  tone: z.enum(["Formal", "Informal", "Persuasive"]),
-  audience: z.enum(["Client", "Manager", "Team"]),
+  prompt: z.string().min(1).max(4000),
   variation: z.number().optional().default(0),
 });
 
@@ -42,24 +37,19 @@ export const generateEmail = createServerFn({ method: "POST" })
         {
           role: "system",
           content:
-            "You are an expert workplace communication assistant. You write complete, natural, human-sounding professional emails tailored to the exact context given. Never use placeholder brackets unless a fact is genuinely unknown and essential. Output only the email: a 'Subject:' line, then the body with a greeting, well-structured paragraphs, and a sign-off. No commentary, no markdown code fences.",
+            "You are an expert workplace communication assistant. You write complete, natural, human-sounding professional emails tailored to the exact context given. Infer the recipient, purpose, tone, audience, and key details from the user's description. Never use placeholder brackets unless a fact is genuinely unknown and essential. Output only the email: a 'Subject:' line, then the body with a greeting, well-structured paragraphs, and a sign-off. No commentary, no markdown code fences.",
         },
         {
           role: "user",
           content: [
-            `Tone: ${data.tone}`,
-            `Audience: ${data.audience}`,
-            `Recipient: ${data.recipient || "not specified"}`,
-            `Purpose: ${data.purpose || "infer from the situation"}`,
-            `Situation / context: ${data.situation}`,
-            `Key details to include: ${data.details || "none provided"}`,
+            `Description of the email I need:\n${data.prompt}`,
             data.variation > 0
               ? "This is a regeneration: produce a meaningfully different phrasing and structure from a typical first draft."
               : "",
             "Write the email now.",
           ]
             .filter(Boolean)
-            .join("\n"),
+            .join("\n\n"),
         },
       ]);
       return { text };

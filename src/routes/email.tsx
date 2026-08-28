@@ -6,16 +6,8 @@ import { generateEmail } from "@/lib/ai.functions";
 import { PageHeader, Disclaimer } from "@/components/PageHeader";
 import { AiOutput, ErrorNote, LoadingLines } from "@/components/AiOutput";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 
 export const Route = createFileRoute("/email")({
   head: () => ({
@@ -24,38 +16,30 @@ export const Route = createFileRoute("/email")({
       {
         name: "description",
         content:
-          "Generate complete, context-aware professional emails with formal, informal or persuasive tone for clients, managers or teams.",
+          "Generate complete, context-aware professional emails from a single description.",
       },
       { property: "og:title", content: "Smart Email Generator — Workplace AI" },
       {
         property: "og:description",
         content:
-          "Generate complete, context-aware professional emails for clients, managers or teams.",
+          "Generate complete, context-aware professional emails from a single description.",
       },
     ],
   }),
   component: EmailPage,
 });
 
-type Tone = "Formal" | "Informal" | "Persuasive";
-type Audience = "Client" | "Manager" | "Team";
-
 function EmailPage() {
   const run = useServerFn(generateEmail);
-  const [situation, setSituation] = useState("");
-  const [purpose, setPurpose] = useState("");
-  const [recipient, setRecipient] = useState("");
-  const [details, setDetails] = useState("");
-  const [tone, setTone] = useState<Tone>("Formal");
-  const [audience, setAudience] = useState<Audience>("Client");
+  const [prompt, setPrompt] = useState("");
   const [result, setResult] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
   const attempt = useRef(0);
 
   const generate = async (regenerate = false) => {
-    if (!situation.trim()) {
-      setError("Describe the situation so the assistant has something to work with.");
+    if (!prompt.trim()) {
+      setError("Describe the email you need so the assistant can write it.");
       return;
     }
     setBusy(true);
@@ -64,12 +48,7 @@ function EmailPage() {
     try {
       const res = await run({
         data: {
-          situation,
-          purpose,
-          recipient,
-          details,
-          tone,
-          audience,
+          prompt,
           variation: attempt.current,
         },
       });
@@ -92,7 +71,7 @@ function EmailPage() {
       <PageHeader
         eyebrow="Email Generator"
         title="Smart Email Generator"
-        description="Give the assistant the context and it writes a complete, natural email — not a template. Edit anything before you send."
+        description="Describe the email you need in plain language. The assistant writes a complete, natural draft you can edit before sending."
       />
 
       <form
@@ -102,83 +81,25 @@ function EmailPage() {
           void generate(false);
         }}
       >
-        <div className="grid gap-5 sm:grid-cols-2">
-          <div className="sm:col-span-2">
-            <Label htmlFor="situation">Situation / context</Label>
-            <Textarea
-              id="situation"
-              required
-              value={situation}
-              onChange={(e) => setSituation(e.target.value)}
-              placeholder="e.g. Our delivery to the client slipped by a week because of a supplier delay, and I need to explain it and propose a new date."
-              className="mt-2 min-h-28 bg-surface"
-            />
-          </div>
-          <div>
-            <Label htmlFor="purpose">Purpose</Label>
-            <Input
-              id="purpose"
-              value={purpose}
-              onChange={(e) => setPurpose(e.target.value)}
-              placeholder="Apologise and reset expectations"
-              className="mt-2 bg-surface"
-            />
-          </div>
-          <div>
-            <Label htmlFor="recipient">Recipient</Label>
-            <Input
-              id="recipient"
-              value={recipient}
-              onChange={(e) => setRecipient(e.target.value)}
-              placeholder="Sarah Naidoo, Head of Operations"
-              className="mt-2 bg-surface"
-            />
-          </div>
-          <div>
-            <Label htmlFor="tone">Tone</Label>
-            <Select value={tone} onValueChange={(v) => setTone(v as Tone)}>
-              <SelectTrigger id="tone" className="mt-2 w-full bg-surface">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {["Formal", "Informal", "Persuasive"].map((t) => (
-                  <SelectItem key={t} value={t}>
-                    {t}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div>
-            <Label htmlFor="audience">Audience</Label>
-            <Select value={audience} onValueChange={(v) => setAudience(v as Audience)}>
-              <SelectTrigger id="audience" className="mt-2 w-full bg-surface">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {["Client", "Manager", "Team"].map((a) => (
-                  <SelectItem key={a} value={a}>
-                    {a}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="sm:col-span-2">
-            <Label htmlFor="details">Key details to include</Label>
-            <Textarea
-              id="details"
-              value={details}
-              onChange={(e) => setDetails(e.target.value)}
-              placeholder="New delivery date 14 March, 5% discount offered, review call on Friday."
-              className="mt-2 min-h-24 bg-surface"
-            />
-          </div>
+        <div>
+          <Label htmlFor="email-prompt">What email do you need?</Label>
+          <Textarea
+            id="email-prompt"
+            required
+            value={prompt}
+            onChange={(e) => setPrompt(e.target.value)}
+            placeholder="e.g. Write a formal apology to our client Acme Corp because a delivery slipped by a week. Explain the supplier delay, propose a new delivery date of 14 March, mention a 5% discount, and suggest a review call on Friday."
+            className="mt-2 min-h-[180px] resize-y bg-surface"
+            aria-describedby="email-prompt-help"
+          />
+          <p id="email-prompt-help" className="mt-2 text-sm text-muted-foreground">
+            Include the recipient, purpose, tone, and any key details you want mentioned.
+          </p>
         </div>
 
         <div className="mt-6 flex flex-wrap items-center gap-3">
           <Button type="submit" disabled={busy}>
-            <Wand2 className="size-4" />
+            <Wand2 className="size-4" aria-hidden="true" />
             {busy ? "Generating…" : "Generate email"}
           </Button>
           <Button
@@ -186,14 +107,11 @@ function EmailPage() {
             variant="ghost"
             disabled={busy}
             onClick={() => {
-              setSituation("");
-              setPurpose("");
-              setRecipient("");
-              setDetails("");
+              setPrompt("");
               clearAll();
             }}
           >
-            Clear form
+            Clear
           </Button>
           <Disclaimer className="basis-full sm:basis-auto" />
         </div>
