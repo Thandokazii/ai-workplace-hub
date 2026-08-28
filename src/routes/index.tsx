@@ -62,8 +62,8 @@ function Dashboard() {
       />
 
       <section aria-labelledby="tools" className="mb-10">
-        <h2 id="tools" className="sr-only">
-          Tools
+        <h2 id="tools" className="mb-4 text-xl font-semibold sm:text-2xl">
+          Productivity tools
         </h2>
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {FEATURES.map(({ to, icon: Icon, title, body, action }) => (
