@@ -4,6 +4,7 @@ import { callAi, AiError } from "./ai.server";
 
 const EmailInput = z.object({
   prompt: z.string().min(1).max(4000),
+  tone: z.enum(["Formal", "Informal", "Persuasive"]).optional().default("Formal"),
   variation: z.number().optional().default(0),
 });
 

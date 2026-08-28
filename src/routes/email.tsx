@@ -7,6 +7,7 @@ import { PageHeader, Disclaimer } from "@/components/PageHeader";
 import { AiOutput, ErrorNote, LoadingLines } from "@/components/AiOutput";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 
 export const Route = createFileRoute("/email")({
