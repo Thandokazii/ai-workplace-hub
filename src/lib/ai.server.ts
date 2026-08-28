@@ -35,10 +35,13 @@ export async function callAi(messages: AiMessage[]): Promise<string> {
     headers: {
       "Content-Type": "application/json",
       "Lovable-API-Key": apiKey,
+      "X-Lovable-AIG-SDK": "fetch",
     },
     body: JSON.stringify({
       model: MODEL,
       input: messages.map((m) => ({ role: m.role, content: m.content })),
+      stream: true,
+      store: false,
       reasoning: { effort: "low" },
     }),
   });
@@ -53,11 +56,45 @@ export async function callAi(messages: AiMessage[]): Promise<string> {
       /* keep default */
     }
     if (res.status === 429) message = "Too many requests right now. Please retry in a moment.";
-    if (res.status === 402) message = message || "AI credits are exhausted for this workspace.";
     throw new AiError(res.status, message);
   }
 
-  const text = extractText(await res.json());
-  if (!text) throw new AiError(502, "The AI returned an empty response. Please try again.");
-  return text;
+  if (!res.body) throw new AiError(502, "The AI returned no response. Please try again.");
+
+  const reader = res.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = "";
+  let text = "";
+  let completed = "";
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    buffer += decoder.decode(value, { stream: true });
+    const lines = buffer.split("\n");
+    buffer = lines.pop() ?? "";
+    for (const line of lines) {
+      if (!line.startsWith("data:")) continue;
+      const payload = line.slice(5).trim();
+      if (!payload || payload === "[DONE]") continue;
+      let evt: any;
+      try {
+        evt = JSON.parse(payload);
+      } catch {
+        continue;
+      }
+      if (evt?.type === "response.output_text.delta" && typeof evt.delta === "string") {
+        text += evt.delta;
+      } else if (evt?.type === "response.completed") {
+        completed = extractText(evt.response) || completed;
+      } else if (evt?.type === "error" || evt?.type === "response.failed") {
+        throw new AiError(502, evt?.error?.message ?? "The AI request failed. Please try again.");
+      }
+    }
+  }
+
+  const final = (text.trim() || completed.trim());
+  if (!final) throw new AiError(502, "The AI returned an empty response. Please try again.");
+  return final;
 }
+
