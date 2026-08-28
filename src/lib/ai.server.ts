@@ -12,9 +12,10 @@ export class AiError extends Error {
 }
 
 function extractText(payload: unknown): string {
-  const data = payload as Record<string, any>;
-  if (typeof data?.output_text === "string" && data.output_text.trim()) {
-    return data.output_text;
+  const data = payload as any;
+  const direct = data?.output_text;
+  if (typeof direct === "string" && direct.trim()) {
+    return direct;
   }
   const chunks: string[] = [];
   for (const item of data?.output ?? []) {
