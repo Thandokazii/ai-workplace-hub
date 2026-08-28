@@ -1,9 +1,6 @@
 import { Link } from "@tanstack/react-router";
-import { LayoutDashboard, Mail, BookOpen, MessageSquare, Menu, Sparkles } from "lucide-react";
-import { useState, type ReactNode } from "react";
-import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+import { LayoutDashboard, Mail, BookOpen, MessageSquare, Sparkles } from "lucide-react";
+import type { ReactNode } from "react";
 
 const NAV = [
   { to: "/", label: "Dashboard", icon: LayoutDashboard },
@@ -12,77 +9,75 @@ const NAV = [
   { to: "/chat", label: "AI Chat", icon: MessageSquare },
 ] as const;
 
-function NavList({ onNavigate }: { onNavigate?: () => void }) {
+function NavList() {
   return (
-    <nav className="flex flex-col gap-1" aria-label="Main">
-      {NAV.map(({ to, label, icon: Icon }) => (
-        <Link
-          key={to}
-          to={to}
-          onClick={onNavigate}
-          activeOptions={{ exact: to === "/" }}
-          className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-          activeProps={{
-            className: "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground",
-          }}
-        >
-          <Icon className="size-4 shrink-0" aria-hidden="true" />
-          {label}
-        </Link>
-      ))}
+    <nav aria-label="Main navigation">
+      <ul className="flex flex-col gap-1">
+        {NAV.map(({ to, label, icon: Icon }) => (
+          <li key={to}>
+            <Link
+              to={to}
+              title={label}
+              aria-label={label}
+              activeOptions={{ exact: to === "/" }}
+              className="flex min-h-11 items-center justify-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-sidebar lg:justify-start"
+              activeProps={{
+                className:
+                  "bg-primary text-primary-foreground hover:bg-primary hover:text-primary-foreground",
+                "aria-current": "page",
+              }}
+            >
+              <Icon className="size-5 shrink-0 lg:size-4" aria-hidden="true" />
+              <span className="hidden lg:inline">{label}</span>
+            </Link>
+          </li>
+        ))}
+      </ul>
     </nav>
   );
 }
 
-function Brand() {
-  return (
-    <div className="flex items-center gap-2.5">
-      <span className="flex size-9 items-center justify-center rounded-lg bg-primary text-primary-foreground">
-        <Sparkles className="size-4" aria-hidden="true" />
-      </span>
-      <span className="leading-tight">
-        <span className="block font-display text-sm font-semibold tracking-tight">Workplace AI</span>
-        <span className="block text-xs text-muted-foreground">Productivity Assistant</span>
-      </span>
-    </div>
-  );
-}
-
 export function AppShell({ children }: { children: ReactNode }) {
-  const [open, setOpen] = useState(false);
-
   return (
-    <div className="min-h-screen bg-background">
-      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 flex-col border-r border-sidebar-border bg-sidebar px-4 py-5 lg:flex">
-        <Brand />
+    <div className="min-h-dvh bg-background">
+      <a
+        href="#main-content"
+        className="sr-only rounded-lg bg-primary px-4 py-2 text-sm font-medium text-primary-foreground focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50"
+      >
+        Skip to main content
+      </a>
+
+      <aside
+        aria-label="Sidebar"
+        className="fixed inset-y-0 left-0 z-30 flex w-16 flex-col border-r border-sidebar-border bg-sidebar px-2 py-4 lg:w-64 lg:px-4 lg:py-5"
+      >
+        <Link
+          to="/"
+          aria-label="Workplace AI Productivity Assistant — go to dashboard"
+          className="flex items-center justify-center gap-2.5 rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring lg:justify-start"
+        >
+          <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground">
+            <Sparkles className="size-4" aria-hidden="true" />
+          </span>
+          <span className="hidden leading-tight lg:block">
+            <span className="block font-display text-sm font-semibold tracking-tight">
+              Workplace AI
+            </span>
+            <span className="block text-xs text-muted-foreground">Productivity Assistant</span>
+          </span>
+        </Link>
+
         <div className="mt-8 flex-1">
           <NavList />
         </div>
-        <p className="rounded-lg border border-border bg-surface p-3 text-[11px] leading-relaxed text-muted-foreground">
+
+        <p className="hidden rounded-lg border border-border bg-surface p-3 text-[11px] leading-relaxed text-muted-foreground lg:block">
           AI-generated content may contain errors. Review and verify important information before
           using it.
         </p>
       </aside>
 
-      <header className="sticky top-0 z-20 flex items-center justify-between gap-3 border-b border-border bg-background/85 px-4 py-3 backdrop-blur lg:hidden">
-        <Brand />
-        <Sheet open={open} onOpenChange={setOpen}>
-          <SheetTrigger asChild>
-            <Button variant="outline" size="icon" aria-label="Open navigation">
-              <Menu className="size-4" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="w-72 bg-sidebar p-5">
-            <SheetTitle className="sr-only">Navigation</SheetTitle>
-            <Brand />
-            <div className="mt-8">
-              <NavList onNavigate={() => setOpen(false)} />
-            </div>
-          </SheetContent>
-        </Sheet>
-      </header>
-
-      <main className={cn("lg:pl-64")}>
+      <main id="main-content" tabIndex={-1} className="pl-16 focus:outline-none lg:pl-64">
         <div className="mx-auto w-full max-w-5xl px-4 py-8 sm:px-6 lg:px-10 lg:py-12">{children}</div>
       </main>
     </div>
