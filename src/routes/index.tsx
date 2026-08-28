@@ -70,7 +70,8 @@ function Dashboard() {
             <Link
               key={to}
               to={to}
-              className="group flex flex-col rounded-xl border border-border bg-card p-5 shadow-card transition-colors hover:border-foreground/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              aria-label={`${title}: ${action}`}
+              className="group flex flex-col rounded-xl border border-border bg-card p-5 shadow-card transition-colors hover:border-foreground/30 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               <span className="mb-4 flex size-10 items-center justify-center rounded-lg bg-surface text-foreground">
                 <Icon className="size-5" aria-hidden="true" />
@@ -95,7 +96,7 @@ function Dashboard() {
             <Link
               key={label}
               to={to}
-              className="flex items-center gap-3 rounded-lg border border-border bg-surface px-4 py-3 text-sm font-medium transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+              className="flex min-h-11 items-center gap-3 rounded-lg border border-border bg-surface px-4 py-3 text-sm font-medium transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
             >
               <Icon className="size-4 shrink-0 text-muted-foreground" aria-hidden="true" />
               {label}
