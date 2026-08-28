@@ -30,9 +30,13 @@ export const Route = createFileRoute("/email")({
   component: EmailPage,
 });
 
+const TONES = ["Formal", "Informal", "Persuasive"] as const;
+type Tone = (typeof TONES)[number];
+
 function EmailPage() {
   const run = useServerFn(generateEmail);
   const [prompt, setPrompt] = useState("");
+  const [tone, setTone] = useState<Tone>("Formal");
   const [result, setResult] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -50,6 +54,7 @@ function EmailPage() {
       const res = await run({
         data: {
           prompt,
+          tone,
           variation: attempt.current,
         },
       });

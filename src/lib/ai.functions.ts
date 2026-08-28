@@ -38,11 +38,12 @@ export const generateEmail = createServerFn({ method: "POST" })
         {
           role: "system",
           content:
-            "You are an expert workplace communication assistant. You write complete, natural, human-sounding professional emails tailored to the exact context given. Infer the recipient, purpose, tone, audience, and key details from the user's description. Never use placeholder brackets unless a fact is genuinely unknown and essential. Output only the email: a 'Subject:' line, then the body with a greeting, well-structured paragraphs, and a sign-off. No commentary, no markdown code fences.",
+            "You are an expert workplace communication assistant. You write complete, natural, human-sounding professional emails tailored to the exact context given. Use the selected tone throughout the email. Infer the recipient, purpose, audience, and key details from the user's description. Never use placeholder brackets unless a fact is genuinely unknown and essential. Output only the email: a 'Subject:' line, then the body with a greeting, well-structured paragraphs, and a sign-off. No commentary, no markdown code fences.",
         },
         {
           role: "user",
           content: [
+            `Tone: ${data.tone}`,
             `Description of the email I need:\n${data.prompt}`,
             data.variation > 0
               ? "This is a regeneration: produce a meaningfully different phrasing and structure from a typical first draft."
