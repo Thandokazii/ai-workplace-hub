@@ -7,6 +7,7 @@ import { PageHeader, Disclaimer } from "@/components/PageHeader";
 import { AiOutput, ErrorNote, LoadingLines } from "@/components/AiOutput";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Textarea } from "@/components/ui/textarea";
 
 export const Route = createFileRoute("/email")({
@@ -29,9 +30,13 @@ export const Route = createFileRoute("/email")({
   component: EmailPage,
 });
 
+const TONES = ["Formal", "Informal", "Persuasive"] as const;
+type Tone = (typeof TONES)[number];
+
 function EmailPage() {
   const run = useServerFn(generateEmail);
   const [prompt, setPrompt] = useState("");
+  const [tone, setTone] = useState<Tone>("Formal");
   const [result, setResult] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -49,6 +54,7 @@ function EmailPage() {
       const res = await run({
         data: {
           prompt,
+          tone,
           variation: attempt.current,
         },
       });
@@ -93,8 +99,29 @@ function EmailPage() {
             aria-describedby="email-prompt-help"
           />
           <p id="email-prompt-help" className="mt-2 text-sm text-muted-foreground">
-            Include the recipient, purpose, tone, and any key details you want mentioned.
+            Include the recipient, purpose, and any key details you want mentioned.
           </p>
+        </div>
+
+        <div className="mt-6">
+          <Label className="mb-3 block" id="email-tone-label">
+            Tone
+          </Label>
+          <RadioGroup
+            value={tone}
+            onValueChange={(value) => setTone(value as Tone)}
+            className="flex flex-wrap gap-4"
+            aria-labelledby="email-tone-label"
+          >
+            {TONES.map((t) => (
+              <div key={t} className="flex items-center gap-2">
+                <RadioGroupItem value={t} id={`email-tone-${t.toLowerCase()}`} />
+                <Label htmlFor={`email-tone-${t.toLowerCase()}`} className="cursor-pointer font-normal">
+                  {t}
+                </Label>
+              </div>
+            ))}
+          </RadioGroup>
         </div>
 
         <div className="mt-6 flex flex-wrap items-center gap-3">
@@ -108,6 +135,7 @@ function EmailPage() {
             disabled={busy}
             onClick={() => {
               setPrompt("");
+              setTone("Formal");
               clearAll();
             }}
           >
