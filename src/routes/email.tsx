@@ -99,8 +99,29 @@ function EmailPage() {
             aria-describedby="email-prompt-help"
           />
           <p id="email-prompt-help" className="mt-2 text-sm text-muted-foreground">
-            Include the recipient, purpose, tone, and any key details you want mentioned.
+            Include the recipient, purpose, and any key details you want mentioned.
           </p>
+        </div>
+
+        <div className="mt-6">
+          <Label className="mb-3 block" id="email-tone-label">
+            Tone
+          </Label>
+          <RadioGroup
+            value={tone}
+            onValueChange={(value) => setTone(value as Tone)}
+            className="flex flex-wrap gap-4"
+            aria-labelledby="email-tone-label"
+          >
+            {TONES.map((t) => (
+              <div key={t} className="flex items-center gap-2">
+                <RadioGroupItem value={t} id={`email-tone-${t.toLowerCase()}`} />
+                <Label htmlFor={`email-tone-${t.toLowerCase()}`} className="cursor-pointer font-normal">
+                  {t}
+                </Label>
+              </div>
+            ))}
+          </RadioGroup>
         </div>
 
         <div className="mt-6 flex flex-wrap items-center gap-3">
@@ -114,6 +135,7 @@ function EmailPage() {
             disabled={busy}
             onClick={() => {
               setPrompt("");
+              setTone("Formal");
               clearAll();
             }}
           >
